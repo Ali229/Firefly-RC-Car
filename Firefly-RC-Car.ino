@@ -1,13 +1,23 @@
-int IN1 = 19;
-int IN2 = 18;
-int IN3 = 17;
-int IN4 = 16;
+//Declerations
+int R1 = 19;
+int R2 = 18;
+int enR = 26;
+int L1 = 17;
+int L2 = 16;
+int enL = 27;
 String message = "";
+
+//Setting PWM properties
+const int freq = 30000;
+const int leftChannel = 0;
+const int rightChannel = 1;
+const int resolution = 8;
+int dutyCycle = 210;
 
 #include "BluetoothSerial.h"
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#error Bluetooth is not enRbled! Please run `make menuconfig` to and enRble it
 #endif
 
 BluetoothSerial SerialBT;
@@ -16,56 +26,70 @@ void setup() {
   Serial.begin(115200);
   SerialBT.register_callback(callback);
   SerialBT.begin("Firefly");
-  pinMode(IN1, OUTPUT);
-  pinMode(IN2, OUTPUT);
-  pinMode(IN3, OUTPUT);
-  pinMode(IN4, OUTPUT);
+  //Right setup
+  pinMode(R1, OUTPUT);
+  pinMode(R2, OUTPUT);
+  pinMode(enR, OUTPUT);
+  //Left setup
+  pinMode(L1, OUTPUT);
+  pinMode(L2, OUTPUT);
+  pinMode(enL, OUTPUT);
+  //Set channels
+  ledcSetup(leftChannel, freq, resolution);
+  ledcSetup(rightChannel, freq, resolution);
+  //Attach pins
+  ledcAttachPin(enR, rightChannel);
+  ledcAttachPin(enL, leftChannel);
 }
 
-void Motor1Forward() {
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
+void MotorRForward() {
+  digitalWrite(R1, HIGH);
+  digitalWrite(R2, LOW);
+  ledcWrite(rightChannel, dutyCycle);
 }
 
-void Motor1Reverse() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
+void MotorRReverse() {
+  digitalWrite(R1, LOW);
+  digitalWrite(R2, HIGH);
+  ledcWrite(rightChannel, dutyCycle);
 }
 
-void Motor1Off() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, LOW);
+void MotorROff() {
+  digitalWrite(R1, LOW);
+  digitalWrite(R2, LOW);
 }
 
-void Motor2Forward() {
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
+void MotorLForward() {
+  digitalWrite(L1, HIGH);
+  digitalWrite(L2, LOW);
+  ledcWrite(leftChannel, dutyCycle);
 }
 
-void Motor2Reverse() {
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
+void MotorLReverse() {
+  digitalWrite(L1, LOW);
+  digitalWrite(L2, HIGH);
+  ledcWrite(leftChannel, dutyCycle);
 }
 
-void Motor2Off() {
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, LOW);
+void MotorLOff() {
+  digitalWrite(L1, LOW);
+  digitalWrite(L2, LOW);
 }
 
 void TurnLeft() {
-  Motor2Off();
-  Motor1Forward();
+  MotorLOff();
+  MotorRForward();
 }
 
 void TurnRight() {
-  Motor1Off();
-  Motor2Forward();
+  MotorROff();
+  MotorLForward();
 }
 
 void callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
   if (event == ESP_SPP_CLOSE_EVT ) {
-    Motor1Off();
-    Motor2Off();
+    MotorROff();
+    MotorLOff();
   }
 }
 
@@ -79,16 +103,16 @@ void loop() {
       message = "";
     }
     if (message == "f") {
-      Motor1Forward();
-      Motor2Forward();
+      MotorRForward();
+      MotorLForward();
     }
     else if (message == "b") {
-      Motor1Reverse();
-      Motor2Reverse();
+      MotorRReverse();
+      MotorLReverse();
     }
     else if (message == "s") {
-      Motor1Off();
-      Motor2Off();
+      MotorROff();
+      MotorLOff();
     }
     else if (message == "r") {
       TurnRight();

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Firefly Remote</string>
-    <string name="dummy_content">Firefly</string>
+    <string name="title">Firefly</string>
+    <string name="steering">Steering Wheel</string>
 </resources>
